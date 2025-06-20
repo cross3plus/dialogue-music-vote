@@ -1,144 +1,240 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>楽曲投票フォーム</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-    h1 { font-size: 1.5em; }
-    form { display: flex; flex-direction: column; gap: 15px; }
-    fieldset { border: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
-    .form-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
-    input[type="number"] { width: 60px; padding: 8px; }
-    input[type="text"], button { padding: 8px; font-size: 1em; }
-    .message { padding: 12px; border-radius: 5px; margin-top: 10px; text-align: center; }
-    .error { color: #d32f2f; background-color: #ffebee; border: 1px solid #d32f2f; }
-    .success { color: #2e7d32; background-color: #e8f5e9; border: 1px solid #2e7d32; }
-    button:disabled { background-color: #ccc; cursor: not-allowed; }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>楽曲投票フォーム</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            padding: 20px;
+            max-width: 720px;
+            margin: auto;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 12px;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 8px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            text-align: center;
+        }
+
+        button {
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            font-size: 1em;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+            button:hover:not(:disabled) {
+                background-color: #2980b9;
+            }
+
+            button:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+        fieldset {
+            border: none;
+            max-height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .error {
+            background-color: #fdecea;
+            color: #c0392b;
+            border: 1px solid #e74c3c;
+        }
+
+        .success {
+            background-color: #eafaf1;
+            color: #27ae60;
+            border: 1px solid #2ecc71;
+        }
+
+        #totalPoints {
+            text-align: right;
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
-  <h1>🎵 楽曲投票フォーム</h1>
+    <h1>DIALOGUE＋ 楽曲投票フォーム</h1>
 
-  <div id="votedMessage" style="display:none;" class="success">
-    あなたは既に投票済みです。ご協力ありがとうございました。
-  </div>
-
-  <form id="voteForm">
-    <p>10点を好きな楽曲に自由に配分してください（合計10点）</p>
-
-    <div class="form-row">
-      <label for="name">名前（ニックネーム）:</label>
-      <input type="text" id="name" required>
+    <div id="votedMessage" style="display:none;" class="success">
+        あなたは既に投票済みです。ご協力ありがとうございました。
     </div>
 
-    <fieldset id="songs"></fieldset>
+    <form id="voteForm">
+        <p>10点を好きな楽曲に自由に配分してください（合計10点）</p>
 
-    <div id="messageArea"></div>
-    <button type="submit" id="submitButton">投票する</button>
-  </form>
+        <div class="form-row">
+            <label for="name">ハンドルネーム:</label>
+            <input type="text" id="name" required>
+        </div>
 
-  <script>
-    const songTitles = [
-      "はじめてのかくめい！","ダイアローグ＋インビテーション！","大冒険をよろしく","好きだよ、好き。","トーク！トーク！トーク！",
-      "Domestic Force!!","パジャマ de パーティー","ぼくらは素敵だ","あたりまえだから","かいかいせんげん！",
-      "夏の花火と君と青","人生イージー？","走れ","あやふわアスタリスク","花咲く僕らのアンサーを",
-      "おもいでしりとり","シュガーロケット","Sincere Grace","ドラマティックピース!!","謎解きはキスのあとで",
-      "プライベイト","I my me mind","アイガッテ♡ランテ","20xxMUEの光","透明できれい",
-      "はっちゃけダイアローグ＋クリスマス！","DIALOGUE＋は上々だ","DIALOGUE＋はまた立ち上がる","僕らが愚かだなんて誰が言った","パンケーキいいな",
-      "恋は世界定理と共に","ガガピーガガ","デネブとスピカ","シャーベットマーメイド","1000万回ハグなんだ",
-      "D＋ has come","絶景絶好スーパーデイ‼","めっちゃオンリーユー","やばきゅん♡シューベルト","MAHOROBA-Deli",
-      "うしみつあっパレイド","夕空航路","ぼくらのユニバース","かすかでたしか","まるっとジブン時代",
-      "にゃんぼりーdeモッフィー!!","来世なんて待ってらんない","フレンドファンファーレ","イージー？ハード？しかして進めっ！","誰かじゃないから",
-      "ユートピア学概論","チャンバワンバfancy!!","everything!","流星群の向こうで","わたしたちのラプソディー",
-      "dialogue＋kawaii","これは訓練ではない","凍てついて秒速","たびのとちゅ","FU-TSU-TSU-KA I love you",
-      "TREASURE！","ロックンロール！","アリバイなカーテシー","カクノゴトキdance","DIALOGUE＋Rap for チャンバワンバjourney!!"
-    ];
+        <fieldset id="songs"></fieldset>
 
-    const songField = document.getElementById("songs");
-    songTitles.forEach(title => {
-      const row = document.createElement("div");
-      row.className = "form-row";
+        <div id="totalPoints">合計: 0 点</div>
+        <div id="messageArea"></div>
+        <button type="submit" id="submitButton">投票する</button>
+    </form>
 
-      const label = document.createElement("label");
-      label.textContent = title;
+    <script>
+        const songTitles = [
+            "はじめてのかくめい！", "ダイアローグ＋インビテーション！", "大冒険をよろしく", "好きだよ、好き。", "トーク！トーク！トーク！",
+            "Domestic Force!!", "パジャマ de パーティー", "ぼくらは素敵だ", "あたりまえだから", "かいかいせんげん！",
+            "夏の花火と君と青", "人生イージー？", "走れ", "あやふわアスタリスク", "花咲く僕らのアンサーを",
+            "おもいでしりとり", "シュガーロケット", "Sincere Grace", "ドラマティックピース!!", "謎解きはキスのあとで",
+            "プライベイト", "I my me mind", "アイガッテ♡ランテ", "20xxMUEの光", "透明できれい",
+            "はっちゃけダイアローグ＋クリスマス！", "DIALOGUE＋は上々だ", "DIALOGUE＋はまた立ち上がる", "僕らが愚かだなんて誰が言った", "パンケーキいいな",
+            "恋は世界定理と共に", "ガガピーガガ", "デネブとスピカ", "シャーベットマーメイド", "1000万回ハグなんだ",
+            "D＋ has come", "絶景絶好スーパーデイ‼", "めっちゃオンリーユー", "やばきゅん♡シューベルト", "MAHOROBA-Deli",
+            "うしみつあっパレイド", "夕空航路", "ぼくらのユニバース", "かすかでたしか", "まるっとジブン時代",
+            "にゃんぼりーdeモッフィー!!", "来世なんて待ってらんない", "フレンドファンファーレ", "イージー？ハード？しかして進めっ！", "誰かじゃないから",
+            "ユートピア学概論", "チャンバワンバfancy!!", "everything!", "流星群の向こうで", "わたしたちのラプソディー",
+            "dialogue＋kawaii", "これは訓練ではない", "凍てついて秒速", "たびのとちゅ", "FU-TSU-TSU-KA I love you",
+            "TREASURE！", "ロックンロール！", "アリバイなカーテシー", "カクノゴトキdance", "DIALOGUE＋Rap for チャンバワンバjourney!!"
+        ];
+        const songField = document.getElementById("songs");
+        const totalPointsDisplay = document.getElementById("totalPoints");
 
-      const input = document.createElement("input");
-      input.type = "number";
-      input.min = "0";
-      input.max = "10";
-      input.value = "0";
-      input.name = title;
+        songTitles.forEach(title => {
+            const row = document.createElement("div");
+            row.className = "form-row";
 
-      row.appendChild(label);
-      row.appendChild(input);
-      songField.appendChild(row);
-    });
+            const label = document.createElement("label");
+            label.textContent = title;
 
-    const voteForm = document.getElementById("voteForm");
-    const submitButton = document.getElementById("submitButton");
-    const messageArea = document.getElementById("messageArea");
-    const votedMessage = document.getElementById('votedMessage');
-    const VOTE_FLAG_KEY = '楽曲投票2025';
+            const input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.max = "10";
+            input.value = "0";
+            input.name = title;
+            input.addEventListener("input", updateTotal);
 
-    if (localStorage.getItem(VOTE_FLAG_KEY)) {
-      voteForm.style.display = 'none';
-      votedMessage.style.display = 'block';
-    }
+            row.appendChild(label);
+            row.appendChild(input);
+            songField.appendChild(row);
+        });
 
-    voteForm.addEventListener("submit", function(e) {
-      e.preventDefault();
+        function updateTotal() {
+            const inputs = document.querySelectorAll('#songs input');
+            let total = 0;
+            inputs.forEach(input => total += Number(input.value));
+            totalPointsDisplay.textContent = `合計: ${total} 点`;
+        }
 
-      messageArea.textContent = '';
-      messageArea.className = 'message';
+        const voteForm = document.getElementById("voteForm");
+        const submitButton = document.getElementById("submitButton");
+        const messageArea = document.getElementById("messageArea");
+        const votedMessage = document.getElementById('votedMessage');
+        const VOTE_FLAG_KEY = '楽曲投票2025';
 
-      const name = document.getElementById("name").value.trim();
-      const inputs = document.querySelectorAll('#songs input');
-      let total = 0;
-      const data = { name: name, votes: {} };
+        if (localStorage.getItem(VOTE_FLAG_KEY)) {
+            voteForm.style.display = 'none';
+            votedMessage.style.display = 'block';
+        }
 
-      inputs.forEach(input => {
-        const val = Number(input.value);
-        total += val;
-        data.votes[input.name] = val;
-      });
+        voteForm.addEventListener("submit", function (e) {
+            e.preventDefault();
 
-      if (total !== 10) {
-        messageArea.textContent = `合計は10点にしてください（現在: ${total}点）`;
-        messageArea.classList.add('error');
-        return;
-      }
+            messageArea.textContent = '';
+            messageArea.className = 'message';
 
-      submitButton.disabled = true;
-      submitButton.textContent = '送信中...';
+            const name = document.getElementById("name").value.trim();
+            const inputs = document.querySelectorAll('#songs input');
+            let total = 0;
+            const data = { name: name, votes: {} };
 
-      const scriptURL = "https://script.google.com/macros/s/AKfycbwGscZXCR-q3tsTonQF2cAhagokWeut9MJFygSFtVBZn9wS-37IQtff1Ujvkmx433VybQ/exec";
+            inputs.forEach(input => {
+                const val = Number(input.value);
+                total += val;
+                data.votes[input.name] = val;
+            });
 
-      fetch(scriptURL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(data)
-      })
-      .then(() => {
-        messageArea.textContent = '投票を受け付けました！ありがとうございます。';
-        messageArea.classList.add('success');
-        localStorage.setItem(VOTE_FLAG_KEY, 'true');
-        voteForm.style.display = 'none';
-        votedMessage.style.display = 'block';
-      })
-      .catch(error => {
-        messageArea.textContent = '送信エラーが発生しました。時間をおいて再試行してください。';
-        messageArea.classList.add('error');
-        console.error('Fetch Error:', error);
-      })
-      .finally(() => {
-        submitButton.disabled = false;
-        submitButton.textContent = '投票する';
-      });
-    });
-  </script>
+            if (total !== 10) {
+                messageArea.textContent = `合計は10点にしてください（現在: ${total}点）`;
+                messageArea.classList.add('error');
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent = '送信中...';
+
+            const scriptURL = "https://script.google.com/macros/s/AKfycbwGscZXCR-q3tsTonQF2cAhagokWeut9MJFygSFtVBZn9wS-37IQtff1Ujvkmx433VybQ/exec";
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(data)
+            })
+                .then(() => {
+                    messageArea.textContent = '投票を受け付けました！ありがとうございます。';
+                    messageArea.classList.add('success');
+                    localStorage.setItem(VOTE_FLAG_KEY, 'true');
+                    voteForm.style.display = 'none';
+                    votedMessage.style.display = 'block';
+                })
+                .catch(error => {
+                    messageArea.textContent = '送信エラーが発生しました。時間をおいて再試行してください。';
+                    messageArea.classList.add('error');
+                    console.error('Fetch Error:', error);
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.textContent = '投票する';
+                });
+        });
+    </script>
 </body>
 </html>
-
