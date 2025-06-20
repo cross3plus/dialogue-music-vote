@@ -1,73 +1,107 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>楽曲投票フォーム</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input[type="number"] { width: 60px; }
-    .error { color: red; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>楽曲投票フォーム</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    h1 { font-size: 1.5em; }
+    form { display: flex; flex-direction: column; gap: 15px; }
+    fieldset { border: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    .form-row { display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: 10px; }
+    input[type="number"] { width: 60px; padding: 8px; }
+    input[type="text"], button { padding: 8px; font-size: 1em; }
+    .message { padding: 12px; border-radius: 5px; margin-top: 10px; text-align: center; }
+    .error { color: #d32f2f; background-color: #ffebee; border: 1px solid #d32f2f; }
+    .success { color: #2e7d32; background-color: #e8f5e9; border: 1px solid #2e7d32; }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
+  </style>
 </head>
 <body>
-  <h1>🎵 楽曲投票フォーム</h1>
-  <p>10点を好きな楽曲に自由に配分してください（合計10点）</p>
-  <form id="voteForm">
-    名前（ニックネーム）: <input type="text" id="name" required><br><br>
+  <h1>🎵 楽曲投票フォーム</h1>
+  <p>10点を好きな楽曲に自由に配分してください（合計10点）</p>
+  <form id="voteForm">
+    <div class="form-row">
+      <label for="name">名前（ニックネーム）:</label>
+      <input type="text" id="name" required>
+    </div>
 
-    <div id="songs">
-      曲A: <input type="number" min="0" max="10" value="0" name="曲A"><br>
-      曲B: <input type="number" min="0" max="10" value="0" name="曲B"><br>
-      曲C: <input type="number" min="0" max="10" value="0" name="曲C"><br>
-      曲D: <input type="number" min="0" max="10" value="0" name="曲D"><br>
-    </div><br>
+    <fieldset id="songs">
+      <div class="form-row"><label for="songA">曲A:</label> <input type="number" min="0" max="10" value="0" name="曲A" id="songA"></div>
+      <div class="form-row"><label for="songB">曲B:</label> <input type="number" min="0" max="10" value="0" name="曲B" id="songB"></div>
+      <div class="form-row"><label for="songC">曲C:</label> <input type="number" min="0" max="10" value="0" name="曲C" id="songC"></div>
+      <div class="form-row"><label for="songD">曲D:</label> <input type="number" min="0" max="10" value="0" name="曲D" id="songD"></div>
+    </fieldset>
 
-    <div class="error" id="errorMsg"></div><br>
-    <button type="submit">投票する</button>
-  </form>
+    <div id="messageArea"></div>
+    <button type="submit" id="submitButton">投票する</button>
+  </form>
 
-  <script>
-    document.getElementById("voteForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-  
-      const name = document.getElementById("name").value.trim();
-      const inputs = document.querySelectorAll('#songs input');
-      let total = 0;
-      const data = { name: name, votes: {} };
-  
-      inputs.forEach(input => {
-        const val = Number(input.value);
-        total += val;
-        data.votes[input.name] = val;
+  <script>
+    const voteForm = document.getElementById("voteForm");
+    const submitButton = document.getElementById("submitButton");
+    const messageArea = document.getElementById("messageArea");
+
+    voteForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      // メッセージを一旦クリア
+      messageArea.textContent = '';
+      messageArea.className = 'message';
+
+      const name = document.getElementById("name").value.trim();
+      const inputs = document.querySelectorAll('#songs input[type="number"]');
+      let total = 0;
+      const data = { name: name, votes: {} };
+  
+      inputs.forEach(input => {
+        const val = Number(input.value);
+        total += val;
+        data.votes[input.name] = val;
+      });
+  
+      if (total !== 10) {
+        messageArea.textContent = `合計は10点にしてください（現在: ${total}点）`;
+        messageArea.classList.add('error');
+        return;
+      }
+  
+      // 送信中はボタンを無効化して二重送信を防ぐ
+      submitButton.disabled = true;
+      submitButton.textContent = '送信中...';
+
+      // 🔽 ここはあなたの Google Apps Script の URL のままにしてください
+      const scriptURL ="https://script.google.com/macros/s/AKfycbwGscZXCR-q3tsTonQF2cAhagokWeut9MJFygSFtVBZn9wS-37IQtff1Ujvkmx433VybQ/exec";
+  
+      // ===== ★★★ ここからが主な修正点 ★★★ =====
+      fetch(scriptURL, {
+        method: 'POST',
+        // mode: 'no-cors' を追加してCORSエラーを回避します。
+        // これによりGASからのレスポンスは受け取れませんが、リクエストは正常に送信されます。
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(data)
+      })
+      .then(() => {
+        // mode: 'no-cors' では、リクエストを送信できれば常にこの .then() が実行されます。
+        messageArea.textContent = '投票を受け付けました！ありがとうございます。';
+        messageArea.classList.add('success');
+        voteForm.reset(); // フォームの内容をリセット
+      })
+      .catch(error => {
+        // ネットワーク接続がないなど、リクエストの送信自体に失敗した場合のエラー処理
+        messageArea.textContent = '送信エラーが発生しました。時間をおいて再試行してください。';
+        messageArea.classList.add('error');
+        console.error('Fetch Error:', error);
+      })
+      .finally(() => {
+        // 成功・失敗にかかわらず、ボタンの状態を元に戻します
+        submitButton.disabled = false;
+        submitButton.textContent = '投票する';
       });
-  
-      const errorMsg = document.getElementById("errorMsg");
-      if (total !== 10) {
-        errorMsg.textContent = `合計は10点にしてください（現在: ${total}点）`;
-        return;
-      } else {
-        errorMsg.textContent = "";
-      }
-  
-      // 🔽 ここに自分の Google Apps Script の URL を貼る
-      const scriptURL ="https://script.google.com/macros/s/AKfycbwGscZXCR-q3tsTonQF2cAhagokWeut9MJFygSFtVBZn9wS-37IQtff1Ujvkmx433VybQ/exec";
-  
-      fetch(scriptURL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(data)
-      })
-      .then(response => {
-        if (response.ok) {
-          alert("投票を受け付けました！");
-        } else {
-          alert("送信に失敗しました。");
-        }
-      })
-      .catch(error => {
-        alert("エラーが発生しました：" + error);
-      });
-    });
-  </script>
+      // ===== ★★★ ここまでが主な修正点 ★★★ =====
+    });
+  </script>
 </body>
 </html>
