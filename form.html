@@ -29,18 +29,18 @@
   <script>
     document.getElementById("voteForm").addEventListener("submit", function(e) {
       e.preventDefault();
-
+  
       const name = document.getElementById("name").value.trim();
       const inputs = document.querySelectorAll('#songs input');
       let total = 0;
       const data = { name: name, votes: {} };
-
+  
       inputs.forEach(input => {
         const val = Number(input.value);
         total += val;
         data.votes[input.name] = val;
       });
-
+  
       const errorMsg = document.getElementById("errorMsg");
       if (total !== 10) {
         errorMsg.textContent = `合計は10点にしてください（現在: ${total}点）`;
@@ -48,13 +48,25 @@
       } else {
         errorMsg.textContent = "";
       }
-
-      // JSONファイルとして保存
-      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `${name}_vote.json`;
-      link.click();
+  
+      // 🔽 ここに自分の Google Apps Script の URL を貼る
+      const scriptURL ="https://script.google.com/macros/s/AKfycbwESxNLUap9xM08b6ZXltrKQ6-4T4jQ5tNRPAkbc0h0EcBR_6sabMJAdb_4stz0LqCVCg/exec";
+  
+      fetch(scriptURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (response.ok) {
+          alert("投票を受け付けました！");
+        } else {
+          alert("送信に失敗しました。");
+        }
+      })
+      .catch(error => {
+        alert("エラーが発生しました：" + error);
+      });
     });
   </script>
 </body>
