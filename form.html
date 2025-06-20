@@ -28,7 +28,7 @@
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 5px;
         }
 
         .form-row {
@@ -158,7 +158,7 @@
     </style>
 </head>
 <body>
-    <h1>DIALOGUE＋ 楽曲投票フォーム</h1>
+    <h1>DIALOGUE＋<br> 楽曲投票フォーム</h1>
 
     <div id="votedMessage" style="display:none;" class="success">
         あなたは既に投票済みです。ご協力ありがとうございました。
@@ -211,7 +211,7 @@
 
             const minusBtn = document.createElement("button");
             minusBtn.type = "button";
-            minusBtn.textContent = "−";
+            minusBtn.textContent = "－";
             minusBtn.className = "decrease";
 
             const input = document.createElement("input");
