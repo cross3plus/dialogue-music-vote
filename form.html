@@ -19,6 +19,11 @@
   </style>
 </head>
 <body>
+    <form id="voteForm">
+      </form>
+  <div id="votedMessage" style="display:none;" class="success">
+    あなたは既に投票済みです。ご協力ありがとうございました。
+  </div>
   <h1>🎵 楽曲投票フォーム</h1>
   <p>10点を好きな楽曲に自由に配分してください（合計10点）</p>
   <form id="voteForm">
@@ -42,7 +47,15 @@
     const voteForm = document.getElementById("voteForm");
     const submitButton = document.getElementById("submitButton");
     const messageArea = document.getElementById("messageArea");
+    const votedMessage = document.getElementById('votedMessage');
+    const VOTE_FLAG_KEY = '楽曲投票2025'; // 他のサイトと被らないようなキー名
 
+    // ページ読み込み時に、投票済みかどうかをチェック
+    if (localStorage.getItem(VOTE_FLAG_KEY)) {
+      voteForm.style.display = 'none'; // フォームを非表示に
+      votedMessage.style.display = 'block'; // 投票済みメッセージを表示
+    }
+    
     voteForm.addEventListener("submit", function(e) {
       e.preventDefault();
 
@@ -88,6 +101,11 @@
         messageArea.textContent = '投票を受け付けました！ありがとうございます。';
         messageArea.classList.add('success');
         voteForm.reset(); // フォームの内容をリセット
+        // 投票成功の印をブラウザに保存
+        localStorage.setItem(VOTE_FLAG_KEY, 'true'); 
+        // フォームを非表示にし、投票済みメッセージを表示
+        voteForm.style.display = 'none';
+        votedMessage.style.display = 'block';        
       })
       .catch(error => {
         // ネットワーク接続がないなど、リクエストの送信自体に失敗した場合のエラー処理
