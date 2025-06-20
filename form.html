@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>楽曲投票フォーム</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input[type="number"] { width: 60px; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>🎵 楽曲投票フォーム</h1>
+  <p>10点を好きな楽曲に自由に配分してください（合計10点）</p>
+  <form id="voteForm">
+    名前（ニックネーム）: <input type="text" id="name" required><br><br>
+
+    <div id="songs">
+      曲A: <input type="number" min="0" max="10" value="0" name="曲A"><br>
+      曲B: <input type="number" min="0" max="10" value="0" name="曲B"><br>
+      曲C: <input type="number" min="0" max="10" value="0" name="曲C"><br>
+      曲D: <input type="number" min="0" max="10" value="0" name="曲D"><br>
+    </div><br>
+
+    <div class="error" id="errorMsg"></div><br>
+    <button type="submit">投票する</button>
+  </form>
+
+  <script>
+    document.getElementById("voteForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const inputs = document.querySelectorAll('#songs input');
+      let total = 0;
+      const data = { name: name, votes: {} };
+
+      inputs.forEach(input => {
+        const val = Number(input.value);
+        total += val;
+        data.votes[input.name] = val;
+      });
+
+      const errorMsg = document.getElementById("errorMsg");
+      if (total !== 10) {
+        errorMsg.textContent = `合計は10点にしてください（現在: ${total}点）`;
+        return;
+      } else {
+        errorMsg.textContent = "";
+      }
+
+      // JSONファイルとして保存
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${name}_vote.json`;
+      link.click();
+    });
+  </script>
+</body>
+</html>
