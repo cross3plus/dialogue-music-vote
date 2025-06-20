@@ -295,42 +295,23 @@
 
             fetch(scriptURL, {
                 method: 'POST',
-                // 'mode: no-cors' を削除 (デフォルトの 'cors' を使用)
-                headers: {
-                    // 正しくJSON形式でデータを送ることをサーバーに伝える
-                    'Content-Type': 'application/json'
-                },
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(data)
             })
-                .then(response => {
-                    // GASからのレスポンスをJSONとして解析する
-                    if (!response.ok) {
-                        // サーバー側でエラーが発生した場合 (例: 500エラー)
-                        throw new Error('サーバーでエラーが発生しました。');
-                    }
-                    return response.json();
-                })
-                .then(result => {
-                    // JSONの解析に成功したら、内容に応じて処理を分岐
-                    if (result.status === 'success') {
-                        messageArea.textContent = '投票を受け付けました！ありがとうございます。';
-                        messageArea.classList.add('success');
-                        localStorage.setItem(VOTE_FLAG_KEY, 'true');
-                        voteForm.style.display = 'none';
-                        votedMessage.style.display = 'block';
-                    } else {
-                        // GAS側が {status: 'error'} を返した場合
-                        throw new Error(result.message || '不明なエラーが発生しました。');
-                    }
+                .then(() => {
+                    messageArea.textContent = '投票を受け付けました！ありがとうございます。';
+                    messageArea.classList.add('success');
+                    localStorage.setItem(VOTE_FLAG_KEY, 'true');
+                    voteForm.style.display = 'none';
+                    votedMessage.style.display = 'block';
                 })
                 .catch(error => {
-                    // 通信エラーや、上記で throw されたエラーをここで捕捉
-                    messageArea.textContent = '送信エラーが発生しました： ' + error.message;
+                    messageArea.textContent = '送信エラーが発生しました。時間をおいて再試行してください。';
                     messageArea.classList.add('error');
                     console.error('Fetch Error:', error);
                 })
                 .finally(() => {
-                    // 成功・失敗にかかわらず、ボタンの状態を元に戻す
                     submitButton.disabled = false;
                     submitButton.textContent = '投票する';
                 });
